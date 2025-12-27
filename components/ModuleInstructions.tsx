@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useBomb } from '@/lib/bomb-context';
 import { ModuleId } from '@/types/bomb';
-import { InstructionStep, StepType, ModuleLogic } from '@/types/module';
+import { StepType } from '@/types/module';
 import { getModule, MODULE_NAMES } from '@/lib/modules';
 
 interface ModuleInstructionsProps {
@@ -17,10 +17,10 @@ export default function ModuleInstructions({ moduleId, onModuleSolved, onAddStri
   const [currentStep, setCurrentStep] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const module = getModule(moduleId);
-  if (!bomb || !module) return null;
+  const moduleData = getModule(moduleId);
+  if (!bomb || !moduleData || !moduleData.getSteps) return null;
 
-  const steps = module.getSteps(bomb as unknown as Parameters<typeof module.getSteps>[0]);
+  const steps = moduleData.getSteps(bomb);
   const solved = isModuleSolved(moduleId);
 
   const handleNext = () => {
@@ -109,17 +109,17 @@ export default function ModuleInstructions({ moduleId, onModuleSolved, onAddStri
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white">{MODULE_NAMES[moduleId]}</h2>
-            <p className="text-slate-400 text-sm mt-1">{module.info.description}</p>
+            <p className="text-slate-400 text-sm mt-1">{moduleData.info.description}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              module.info.difficulty === 'easy'
+              moduleData.info.difficulty === 'easy'
                 ? 'bg-green-500/20 text-green-400'
-                : module.info.difficulty === 'medium'
+                : moduleData.info.difficulty === 'medium'
                   ? 'bg-yellow-500/20 text-yellow-400'
                   : 'bg-red-500/20 text-red-400'
             }`}>
-              {module.info.difficulty}
+              {moduleData.info.difficulty}
             </span>
           </div>
         </div>
@@ -229,8 +229,8 @@ export default function ModuleInstructions({ moduleId, onModuleSolved, onAddStri
       {/* Module info footer */}
       <div className="px-6 py-4 bg-slate-700/30 border-t border-slate-600">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">Category: {module.info.category}</span>
-          <span className="text-slate-400">Difficulty: {module.info.difficulty}</span>
+          <span className="text-slate-400">Category: {moduleData.info.category}</span>
+          <span className="text-slate-400">Difficulty: {moduleData.info.difficulty}</span>
         </div>
       </div>
     </div>

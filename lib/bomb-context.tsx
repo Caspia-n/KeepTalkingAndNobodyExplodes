@@ -226,8 +226,8 @@ export function BombProvider({ children }: { children: ReactNode }) {
 
   const isModuleSolved = (moduleId: ModuleId): boolean => {
     if (!bomb) return false;
-    const module = bomb.modules.find((m) => m.id === moduleId);
-    return module?.solved || false;
+    const moduleState = bomb.modules.find((m) => m.id === moduleId);
+    return moduleState?.solved || false;
   };
 
   const startTimer = () => {

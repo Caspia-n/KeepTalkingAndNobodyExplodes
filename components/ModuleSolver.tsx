@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useBomb } from '@/lib/bomb-context';
 import { ModuleId } from '@/types/bomb';
-import { Question } from '@/types/module';
 import { getModule, MODULE_NAMES } from '@/lib/modules';
 
 interface ModuleSolverProps {
@@ -22,10 +21,10 @@ export default function ModuleSolver({ moduleId, onComplete, onError }: ModuleSo
   const [solution, setSolution] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const module = getModule(moduleId);
-  if (!bomb || !module) return null;
+  const moduleData = getModule(moduleId);
+  if (!bomb || !moduleData) return null;
 
-  const questions = module.getQuestions?.(bomb) || [];
+  const questions = moduleData.getQuestions?.(bomb) || [];
   const filteredQuestions = questions.filter(
     q => !q.condition || q.condition(answers)
   );
@@ -34,15 +33,6 @@ export default function ModuleSolver({ moduleId, onComplete, onError }: ModuleSo
   const totalSteps = filteredQuestions.length;
   const isLastStep = currentStep === totalSteps - 1;
   const hasVisitedAllSteps = Object.keys(answers).length >= questions.length;
-
-  useEffect(() => {
-    // Reset when module changes
-    setCurrentStep(0);
-    setAnswers({});
-    setError(null);
-    setSolution(null);
-    setShowSuccess(false);
-  }, [moduleId]);
 
   const handleAnswerChange = (value: AnswerType) => {
     if (currentQuestion) {
@@ -58,7 +48,7 @@ export default function ModuleSolver({ moduleId, onComplete, onError }: ModuleSo
 
   const trySolve = (answersToUse: Record<string, AnswerType>) => {
     try {
-      const result = module.solve?.(bomb, answersToUse);
+      const result = moduleData.solve?.(bomb, answersToUse);
       if (result) {
         setSolution(result.solution || 'Complete');
       }
@@ -120,7 +110,7 @@ export default function ModuleSolver({ moduleId, onComplete, onError }: ModuleSo
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">{MODULE_NAMES[moduleId]}</h2>
-              <p className="text-slate-400 text-sm mt-1">{module.info.description}</p>
+              <p className="text-slate-400 text-sm mt-1">{moduleData.info.description}</p>
             </div>
           </div>
         </div>
@@ -148,32 +138,32 @@ export default function ModuleSolver({ moduleId, onComplete, onError }: ModuleSo
             </button>
           </div>
         </div>
-      </div>
-    );
-  }
+        </div>
+        );
+        }
 
-  return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-      {/* Header */}
-      <div className="bg-slate-700 px-6 py-4 border-b border-slate-600">
+        return (
+        <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+        {/* Header */}
+        <div className="bg-slate-700 px-6 py-4 border-b border-slate-600">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white">{MODULE_NAMES[moduleId]}</h2>
-            <p className="text-slate-400 text-sm mt-1">{module.info.description}</p>
+            <p className="text-slate-400 text-sm mt-1">{moduleData.info.description}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              module.info.difficulty === 'easy'
+              moduleData.info.difficulty === 'easy'
                 ? 'bg-green-500/20 text-green-400'
-                : module.info.difficulty === 'medium'
+                : moduleData.info.difficulty === 'medium'
                   ? 'bg-yellow-500/20 text-yellow-400'
                   : 'bg-red-500/20 text-red-400'
             }`}>
-              {module.info.difficulty}
+              {moduleData.info.difficulty}
             </span>
           </div>
         </div>
-      </div>
+        </div>
 
       {/* Progress */}
       <div className="px-6 py-3 bg-slate-700/50 border-b border-slate-600">

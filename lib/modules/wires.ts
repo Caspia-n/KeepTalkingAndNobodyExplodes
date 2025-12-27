@@ -70,10 +70,9 @@ export const wires: ModuleLogic = {
     ];
   },
 
-  solve: (bomb: BombState, answers: Record<string, any>) => {
-    const wireCount = parseInt(answers['wire-count']);
+  solve: (bomb: BombState, answers: Record<string, unknown>) => {
+    const wireCount = parseInt(answers['wire-count'] as string);
     const wireColors = (answers['wire-colors'] as string).toUpperCase().split(',');
-    const hasVowel = hasVowelInSerial(bomb);
     const lastDigitOdd = isLastDigitOdd(bomb);
     
     // Wire color mapping
@@ -168,7 +167,7 @@ export const wires: ModuleLogic = {
     };
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Wires module validated' };
   },
 

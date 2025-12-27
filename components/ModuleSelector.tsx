@@ -11,13 +11,12 @@ interface ModuleSelectorProps {
 }
 
 export default function ModuleSelector({ selectedModule, onSelectModule }: ModuleSelectorProps) {
-  const { bomb, getSolvedModules, getUnsolvedModules, isModuleSolved } = useBomb();
+  const { bomb, getSolvedModules, isModuleSolved } = useBomb();
 
   if (!bomb) return null;
 
   const solvedCount = getSolvedModules().length;
   const totalCount = bomb.modules.length;
-  const unsolvedModules = getUnsolvedModules();
 
   return (
     <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">

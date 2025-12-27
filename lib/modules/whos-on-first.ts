@@ -1,4 +1,3 @@
-import { BombState } from '@/types/bomb';
 import { ModuleLogic, InstructionStep } from '@/types/module';
 
 // Who's on First module logic based on KTANE manual
@@ -11,7 +10,7 @@ export const whosOnFirst: ModuleLogic = {
     difficulty: 'hard',
   },
 
-  getSteps: (_bomb: BombState): InstructionStep[] => {
+  getSteps: (): InstructionStep[] => {
     const steps: InstructionStep[] = [
       {
         step: 1,
@@ -108,7 +107,7 @@ The buttons are labeled with words. Match the display word to the correct button
     return steps;
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: "Who's on First module requires display word input" };
   },
 
