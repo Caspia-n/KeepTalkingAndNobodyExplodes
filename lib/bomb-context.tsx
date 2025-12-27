@@ -1,10 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
-import { BombState, BombAction, BombContextType, Indicator, PortType } from '@/types/bomb';
+import { BombState, BombAction, BombContextType, Indicator, PortType, ModuleId, ModuleState } from '@/types/bomb';
 import { storage } from './storage';
 
 const BombContext = createContext<BombContextType | undefined>(undefined);
+
+const DEFAULT_MODULES: ModuleState[] = [
+  { id: 'wires', solved: false, strikes: 0 },
+  { id: 'button', solved: false, strikes: 0 },
+  { id: 'keypads', solved: false, strikes: 0 },
+  { id: 'simon', solved: false, strikes: 0 },
+  { id: 'whos-on-first', solved: false, strikes: 0 },
+  { id: 'memory', solved: false, strikes: 0 },
+  { id: 'morse', solved: false, strikes: 0 },
+];
 
 function bombReducer(state: BombState | null, action: BombAction): BombState | null {
   switch (action.type) {
@@ -16,6 +26,7 @@ function bombReducer(state: BombState | null, action: BombAction): BombState | n
         indicators: action.payload.indicators || [],
         ports: action.payload.ports || [],
         strikes: action.payload.strikes || 0,
+        modules: action.payload.modules || [...DEFAULT_MODULES],
         createdAt: action.payload.createdAt || Date.now(),
         updatedAt: Date.now(),
       };
@@ -26,6 +37,7 @@ function bombReducer(state: BombState | null, action: BombAction): BombState | n
         ...state,
         ...action.payload,
         id: state.id,
+        modules: action.payload.modules || state.modules,
         createdAt: state.createdAt,
         updatedAt: Date.now(),
       };
@@ -73,6 +85,36 @@ function bombReducer(state: BombState | null, action: BombAction): BombState | n
     }
     case 'LOAD_BOMB': {
       return { ...action.payload, updatedAt: Date.now() };
+    }
+    case 'SET_MODULE_SOLVED': {
+      if (!state) return null;
+      return {
+        ...state,
+        modules: state.modules.map((m) =>
+          m.id === action.payload ? { ...m, solved: true } : m
+        ),
+        updatedAt: Date.now(),
+      };
+    }
+    case 'ADD_MODULE_STRIKE': {
+      if (!state) return null;
+      return {
+        ...state,
+        strikes: Math.min(state.strikes + 1, 3),
+        modules: state.modules.map((m) =>
+          m.id === action.payload ? { ...m, strikes: m.strikes + 1 } : m
+        ),
+        updatedAt: Date.now(),
+      };
+    }
+    case 'RESET_MODULES': {
+      if (!state) return null;
+      return {
+        ...state,
+        modules: [...DEFAULT_MODULES],
+        strikes: 0,
+        updatedAt: Date.now(),
+      };
     }
     default:
       return state;
@@ -141,6 +183,34 @@ export function BombProvider({ children }: { children: ReactNode }) {
     return bomb !== null;
   };
 
+  const setModuleSolved = (moduleId: ModuleId) => {
+    dispatch({ type: 'SET_MODULE_SOLVED', payload: moduleId });
+  };
+
+  const addModuleStrike = (moduleId: ModuleId) => {
+    dispatch({ type: 'ADD_MODULE_STRIKE', payload: moduleId });
+  };
+
+  const resetModules = () => {
+    dispatch({ type: 'RESET_MODULES' });
+  };
+
+  const getSolvedModules = (): ModuleState[] => {
+    if (!bomb) return [];
+    return bomb.modules.filter((m) => m.solved);
+  };
+
+  const getUnsolvedModules = (): ModuleState[] => {
+    if (!bomb) return [];
+    return bomb.modules.filter((m) => !m.solved);
+  };
+
+  const isModuleSolved = (moduleId: ModuleId): boolean => {
+    if (!bomb) return false;
+    const module = bomb.modules.find((m) => m.id === moduleId);
+    return module?.solved || false;
+  };
+
   const value: BombContextType = {
     bomb,
     createBomb,
@@ -154,6 +224,12 @@ export function BombProvider({ children }: { children: ReactNode }) {
     clearBomb,
     loadBomb,
     hasActiveBomb,
+    setModuleSolved,
+    addModuleStrike,
+    resetModules,
+    getSolvedModules,
+    getUnsolvedModules,
+    isModuleSolved,
   };
 
   return <BombContext.Provider value={value}>{children}</BombContext.Provider>;

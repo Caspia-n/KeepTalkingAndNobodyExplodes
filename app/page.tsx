@@ -5,16 +5,19 @@ import { BombProvider } from '@/lib/bomb-context';
 import BombMenu from '@/components/BombMenu';
 import BombForm from '@/components/BombForm';
 import BombDisplay from '@/components/BombDisplay';
+import DefusalInterface from '@/components/DefusalInterface';
+
+type View = 'menu' | 'form' | 'display' | 'defusal';
 
 function AppContent() {
-  const [view, setView] = useState<'menu' | 'form' | 'display'>('menu');
+  const [view, setView] = useState<View>('menu');
 
   const handleStartNew = () => {
     setView('form');
   };
 
   const handleContinue = () => {
-    setView('display');
+    setView('defusal');
   };
 
   const handleEdit = () => {
@@ -39,7 +42,13 @@ function AppContent() {
         />
       )}
       {view === 'form' && <BombForm onCancel={handleFormCancel} />}
-      {view === 'display' && <BombDisplay onEdit={handleEdit} onReset={handleReset} />}
+      {view === 'display' && <BombDisplay onEdit={handleEdit} onReset={handleReset} onContinue={handleContinue} />}
+      {view === 'defusal' && (
+        <DefusalInterface
+          onEdit={handleEdit}
+          onReset={handleReset}
+        />
+      )}
     </div>
   );
 }

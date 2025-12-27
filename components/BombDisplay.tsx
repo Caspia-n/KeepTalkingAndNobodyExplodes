@@ -4,7 +4,13 @@ import React, { useState } from 'react';
 import { useBomb } from '@/lib/bomb-context';
 import { storage } from '@/lib/storage';
 
-export default function BombDisplay({ onEdit, onReset }: { onEdit: () => void; onReset: () => void }) {
+interface BombDisplayProps {
+  onEdit: () => void;
+  onReset: () => void;
+  onContinue: () => void;
+}
+
+export default function BombDisplay({ onEdit, onReset, onContinue }: BombDisplayProps) {
   const { bomb, addStrike, resetStrikes } = useBomb();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveName, setSaveName] = useState('');
@@ -243,11 +249,17 @@ export default function BombDisplay({ onEdit, onReset }: { onEdit: () => void; o
           </div>
         </div>
 
-        {/* Reset Button */}
-        <div className="mt-8">
+        {/* Actions */}
+        <div className="mt-8 flex gap-4">
+          <button
+            onClick={onContinue}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            🎯 Start Defusal
+          </button>
           <button
             onClick={onReset}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors border border-red-500"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors border border-red-500"
           >
             🔄 Return to Menu
           </button>
