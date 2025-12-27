@@ -27,6 +27,9 @@ function bombReducer(state: BombState | null, action: BombAction): BombState | n
         ports: action.payload.ports || [],
         strikes: action.payload.strikes || 0,
         modules: action.payload.modules || [...DEFAULT_MODULES],
+        timer: action.payload.timer || '5:00',
+        timerRunning: action.payload.timerRunning ?? false,
+        defuseStartTime: action.payload.defuseStartTime,
         createdAt: action.payload.createdAt || Date.now(),
         updatedAt: Date.now(),
       };
@@ -115,6 +118,22 @@ function bombReducer(state: BombState | null, action: BombAction): BombState | n
         strikes: 0,
         updatedAt: Date.now(),
       };
+    }
+    case 'START_TIMER': {
+      if (!state) return null;
+      return { ...state, timerRunning: true, updatedAt: Date.now() };
+    }
+    case 'STOP_TIMER': {
+      if (!state) return null;
+      return { ...state, timerRunning: false, updatedAt: Date.now() };
+    }
+    case 'UPDATE_TIMER': {
+      if (!state) return null;
+      return { ...state, timer: action.payload, updatedAt: Date.now() };
+    }
+    case 'SET_DEFUSE_START_TIME': {
+      if (!state) return null;
+      return { ...state, defuseStartTime: action.payload, updatedAt: Date.now() };
     }
     default:
       return state;
@@ -211,6 +230,31 @@ export function BombProvider({ children }: { children: ReactNode }) {
     return module?.solved || false;
   };
 
+  const startTimer = () => {
+    dispatch({ type: 'START_TIMER' });
+    if (!bomb?.defuseStartTime) {
+      dispatch({ type: 'SET_DEFUSE_START_TIME', payload: Date.now() });
+    }
+  };
+
+  const stopTimer = () => {
+    dispatch({ type: 'STOP_TIMER' });
+  };
+
+  const updateTimer = (timer: string) => {
+    dispatch({ type: 'UPDATE_TIMER', payload: timer });
+  };
+
+  const getTimeRemaining = (): number => {
+    if (!bomb) return 0;
+    const [minutes, seconds] = bomb.timer.split(':').map(Number);
+    return minutes * 60 + seconds;
+  };
+
+  const isTimerRunning = (): boolean => {
+    return bomb?.timerRunning ?? false;
+  };
+
   const value: BombContextType = {
     bomb,
     createBomb,
@@ -230,6 +274,11 @@ export function BombProvider({ children }: { children: ReactNode }) {
     getSolvedModules,
     getUnsolvedModules,
     isModuleSolved,
+    startTimer,
+    stopTimer,
+    updateTimer,
+    getTimeRemaining,
+    isTimerRunning,
   };
 
   return <BombContext.Provider value={value}>{children}</BombContext.Provider>;

@@ -40,6 +40,9 @@ export interface BombState {
   ports: PortType[];
   strikes: number;
   modules: ModuleState[];
+  timer: string; // MM:SS format
+  timerRunning: boolean;
+  defuseStartTime?: number; // timestamp when defusal started
   createdAt: number;
   updatedAt: number;
 }
@@ -69,7 +72,11 @@ export type BombAction =
   | { type: 'LOAD_BOMB'; payload: BombState }
   | { type: 'SET_MODULE_SOLVED'; payload: ModuleId }
   | { type: 'ADD_MODULE_STRIKE'; payload: ModuleId }
-  | { type: 'RESET_MODULES' };
+  | { type: 'RESET_MODULES' }
+  | { type: 'START_TIMER' }
+  | { type: 'STOP_TIMER' }
+  | { type: 'UPDATE_TIMER'; payload: string }
+  | { type: 'SET_DEFUSE_START_TIME'; payload: number };
 
 export interface BombContextType {
   bomb: BombState | null;
@@ -90,6 +97,11 @@ export interface BombContextType {
   getSolvedModules: () => ModuleState[];
   getUnsolvedModules: () => ModuleState[];
   isModuleSolved: (moduleId: ModuleId) => boolean;
+  startTimer: () => void;
+  stopTimer: () => void;
+  updateTimer: (timer: string) => void;
+  getTimeRemaining: () => number;
+  isTimerRunning: () => boolean;
 }
 
 // Helper functions for bomb characteristics

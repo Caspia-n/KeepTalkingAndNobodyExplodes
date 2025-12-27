@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useBomb } from '@/lib/bomb-context';
+import { getModule, MODULE_NAMES } from '@/lib/modules';
 import ModuleSelector from './ModuleSelector';
 import ModuleInstructions from './ModuleInstructions';
+import ModuleSolver from './ModuleSolver';
 import StrikeCounter from './StrikeCounter';
+import TimerDisplay from './TimerDisplay';
 import { ModuleId } from '@/types/bomb';
-import { MODULE_NAMES } from '@/lib/modules';
 
 type DefusalView = 'modules' | 'bomb';
 
@@ -15,6 +17,7 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
   const [selectedModule, setSelectedModule] = useState<ModuleId | null>('wires');
   const [view, setView] = useState<DefusalView>('modules');
   const [showVictory, setShowVictory] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
     if (!bomb) return;
@@ -26,6 +29,17 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
       setShowVictory(true);
     }
   }, [bomb, getSolvedModules]);
+
+  useEffect(() => {
+    // Check for game over when timer reaches 0
+    const timerInterval = setInterval(() => {
+      if (bomb?.timerRunning && bomb.timer === '0:00') {
+        setGameOver(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, [bomb]);
 
   if (!bomb) return null;
 
@@ -49,6 +63,38 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
     setShowVictory(false);
     setSelectedModule('wires');
   };
+
+  if (gameOver) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-slate-800 rounded-lg p-8 shadow-xl border border-red-500/50">
+          <div className="text-center">
+            <div className="text-8xl mb-6 animate-pulse">💥</div>
+            <h2 className="text-4xl font-bold text-red-400 mb-4">
+              GAME OVER!
+            </h2>
+            <p className="text-xl text-slate-300 mb-6">
+              The bomb exploded! {bomb.strikes} strike{bomb.strikes !== 1 ? 's' : ''} received.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleResetModules}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              >
+                🔄 Try Again
+              </button>
+              <button
+                onClick={onReset}
+                className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors border border-slate-600"
+              >
+                🏠 Return to Menu
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showVictory) {
     return (
@@ -113,36 +159,20 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
 
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Header */}
+      {/* Header with Timer */}
       <div className="bg-slate-800 rounded-lg p-4 mb-6 border border-slate-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-white">Defusal Progress</h1>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setView('modules')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  view === 'modules'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                }`}
-              >
-                📦 Modules
-              </button>
-              <button
-                onClick={() => setView('bomb')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  view === 'bomb'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                }`}
-              >
-                💣 Bomb Info
-              </button>
-            </div>
+            <TimerDisplay className="ml-4" showControls />
           </div>
-          <div className="flex items-center gap-4">
-            <StrikeCounter compact />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView(view === 'modules' ? 'bomb' : 'modules')}
+              className="px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {view === 'modules' ? '💣 Bomb Info' : '📦 Modules'}
+            </button>
             <button
               onClick={onEdit}
               className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
@@ -155,24 +185,11 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
 
       {/* Progress summary */}
       <div className="bg-slate-700 rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">
-            Progress: <span className="text-white font-bold">{solvedCount}/{totalCount}</span> modules solved
+        <div className="flex items-center justify-between">
+          <span className="text-slate-400 text-sm">
+            Progress: <span className="text-white font-bold">{solvedCount}/{totalCount}</span> modules
           </span>
-          <div className="flex items-center gap-4">
-            <span className="text-slate-400">
-              Serial: <span className="font-mono text-blue-400">{bomb.serialNumber}</span>
-            </span>
-            <span className="text-slate-400">
-              Batteries: <span className="font-bold">{bomb.batteries}</span>
-            </span>
-            <span className="text-slate-400">
-              Indicators: <span className="font-bold">{bomb.indicators.length}</span>
-            </span>
-            <span className="text-slate-400">
-              Strikes: <span className={`font-bold ${bomb.strikes > 0 ? 'text-yellow-400' : 'text-green-400'}`}>{bomb.strikes}/3</span>
-            </span>
-          </div>
+          <StrikeCounter compact />
         </div>
         <div className="w-full h-2 bg-slate-600 rounded-full mt-3 overflow-hidden">
           <div
@@ -192,14 +209,24 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
             />
           </div>
 
-          {/* Module instructions */}
+          {/* Module solver/instructions */}
           <div className="lg:col-span-2">
             {selectedModule && (
-              <ModuleInstructions
-                moduleId={selectedModule}
-                onModuleSolved={handleModuleSolved}
-                onAddStrike={handleAddStrike}
-              />
+              <>
+                {getModule(selectedModule)?.validate ? (
+                  <ModuleSolver
+                    moduleId={selectedModule}
+                    onComplete={handleModuleSolved}
+                    onError={handleAddStrike}
+                  />
+                ) : (
+                  <ModuleInstructions
+                    moduleId={selectedModule}
+                    onModuleSolved={handleModuleSolved}
+                    onAddStrike={handleAddStrike}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>

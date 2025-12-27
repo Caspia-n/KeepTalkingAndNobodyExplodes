@@ -80,12 +80,148 @@ Wait for the countdown timer to reach the correct number, then release the butto
     return steps;
   },
 
+  getQuestions: (bomb: BombState) => {
+    return [
+      {
+        id: 'button-color',
+        type: 'select',
+        label: 'Button color',
+        description: 'What color is the button?',
+        options: ['Red', 'Blue', 'Yellow', 'White', 'Black'],
+      },
+      {
+        id: 'button-label',
+        type: 'select',
+        label: 'Button label',
+        description: 'What does the button say?',
+        options: ['Detonate', 'Hold', 'Abort', 'Press', 'Release'],
+      },
+      {
+        id: 'strip-color',
+        type: 'select',
+        label: 'Strip color (if holding)',
+        description: 'If you need to hold the button, what color strip appears?',
+        options: ['White', 'Blue', 'Yellow', 'Red', 'Green', 'Orange', 'Purple', 'Black', 'Pink', 'Brown'],
+        condition: (answers) => {
+          const color = answers['button-color'];
+          const label = answers['button-label'];
+          
+          // Rules that require holding (strip color check)
+          if (label === 'Abort' && bomb.indicators.includes('BOB')) return true;
+          if (label === 'Hold' && bomb.batteries >= 2) return true;
+          if (color === 'White' && bomb.indicators.includes('CAR')) return true;
+          if (color === 'Yellow' && !bomb.indicators.includes('BOB')) return true;
+          if (color === 'Blue' && label === 'Hold') return true;
+          
+          return false; // Default: no strip check needed
+        },
+      },
+    ];
+  },
+
+  solve: (bomb: BombState, answers: Record<string, any>) => {
+    const color = answers['button-color'] as string;
+    const label = answers['button-label'] as string;
+    const stripColor = answers['strip-color'] as string;
+    
+    // Strip color to seconds mapping
+    const stripTiming: Record<string, number> = {
+      'White': 1,
+      'Blue': 2,
+      'Yellow': 3,
+      'Red': 4,
+      'Green': 5,
+      'Orange': 6,
+      'Purple': 7,
+      'Black': 8,
+      'Pink': 9,
+      'Brown': 0,
+    };
+
+    // Apply rules in order
+    // Rule 1: ABORT button with lit BOB indicator
+    if (label === 'Abort' && bomb.indicators.includes('BOB')) {
+      const seconds = stripTiming[stripColor];
+      return {
+        solution: `Hold button until timer shows ${seconds}, then release`,
+        explanation: 'Button says ABORT and BOB is lit',
+      };
+    }
+    
+    // Rule 2: DETONATE with more than 1 battery
+    if (label === 'Detonate' && bomb.batteries > 1) {
+      return {
+        solution: 'Press and immediately release',
+        explanation: 'Button says DETONATE and more than 1 battery',
+      };
+    }
+    
+    // Rule 3: HOLD button with 2+ batteries
+    if (label === 'Hold' && bomb.batteries >= 2) {
+      const seconds = stripTiming[stripColor];
+      return {
+        solution: `Hold button until timer shows ${seconds}, then release`,
+        explanation: 'Button says HOLD and 2+ batteries',
+      };
+    }
+    
+    // Rule 4: WHITE button with lit CAR indicator
+    if (color === 'White' && bomb.indicators.includes('CAR')) {
+      const seconds = stripTiming[stripColor];
+      return {
+        solution: `Hold button until timer shows ${seconds}, then release`,
+        explanation: 'White button and CAR is lit',
+      };
+    }
+    
+    // Rule 5: YELLOW button with no lit BOB indicator
+    if (color === 'Yellow' && !bomb.indicators.includes('BOB')) {
+      const seconds = stripTiming[stripColor];
+      return {
+        solution: `Hold button until timer shows ${seconds}, then release`,
+        explanation: 'Yellow button and BOB is not lit',
+      };
+    }
+    
+    // Rule 6: RED button saying HOLD
+    if (color === 'Red' && label === 'Hold' && bomb.batteries > 1) {
+      return {
+        solution: 'Press and immediately release',
+        explanation: 'Red button saying HOLD with more than 1 battery',
+      };
+    }
+    
+    // Rule 7: 2+ batteries with lit FRK indicator
+    if (bomb.batteries >= 2 && bomb.indicators.includes('FRK')) {
+      return {
+        solution: 'Press and immediately release',
+        explanation: '2+ batteries and FRK is lit',
+      };
+    }
+    
+    // Rule 8: BLUE button saying HOLD
+    if (color === 'Blue' && label === 'Hold') {
+      const seconds = stripTiming[stripColor];
+      return {
+        solution: `Hold button until timer shows ${seconds}, then release`,
+        explanation: 'Blue button saying HOLD',
+      };
+    }
+    
+    // Rule 9: Default - hold the button
+    const seconds = stripTiming[stripColor];
+    return {
+      solution: `Hold button until timer shows ${seconds}, then release`,
+      explanation: 'Default rule: hold the button',
+    };
+  },
+
   validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
-    return { correct: true, message: 'Button module validation requires button state input' };
+    return { correct: true, message: 'Button module validated' };
   },
 
   defaultAnswers: (): Record<string, unknown> => {
-    return { color: '', label: '' };
+    return { 'button-color': 'Red', 'button-label': 'Press' };
   },
 };
 
