@@ -21,6 +21,17 @@ export type PortType =
   | 'stereo_rca'
   | 'empty';
 
+export type ModuleCategory = 'regular' | 'needy';
+
+export type ModuleId =
+  | 'wires'
+  | 'button'
+  | 'keypads'
+  | 'simon'
+  | 'whos-on-first'
+  | 'memory'
+  | 'morse';
+
 export interface BombState {
   id: string;
   serialNumber: string;
@@ -28,8 +39,15 @@ export interface BombState {
   indicators: Indicator[];
   ports: PortType[];
   strikes: number;
+  modules: ModuleState[];
   createdAt: number;
   updatedAt: number;
+}
+
+export interface ModuleState {
+  id: ModuleId;
+  solved: boolean;
+  strikes: number;
 }
 
 export interface SavedBomb {
@@ -48,7 +66,10 @@ export type BombAction =
   | { type: 'ADD_STRIKE' }
   | { type: 'RESET_STRIKES' }
   | { type: 'CLEAR_BOMB' }
-  | { type: 'LOAD_BOMB'; payload: BombState };
+  | { type: 'LOAD_BOMB'; payload: BombState }
+  | { type: 'SET_MODULE_SOLVED'; payload: ModuleId }
+  | { type: 'ADD_MODULE_STRIKE'; payload: ModuleId }
+  | { type: 'RESET_MODULES' };
 
 export interface BombContextType {
   bomb: BombState | null;
@@ -63,4 +84,38 @@ export interface BombContextType {
   clearBomb: () => void;
   loadBomb: (bomb: BombState) => void;
   hasActiveBomb: () => boolean;
+  setModuleSolved: (moduleId: ModuleId) => void;
+  addModuleStrike: (moduleId: ModuleId) => void;
+  resetModules: () => void;
+  getSolvedModules: () => ModuleState[];
+  getUnsolvedModules: () => ModuleState[];
+  isModuleSolved: (moduleId: ModuleId) => boolean;
+}
+
+// Helper functions for bomb characteristics
+export function hasVowelInSerial(bomb: BombState | null): boolean {
+  if (!bomb) return false;
+  return /[AEIOU]/i.test(bomb.serialNumber);
+}
+
+export function isLastDigitOdd(bomb: BombState | null): boolean {
+  if (!bomb) return false;
+  const lastChar = bomb.serialNumber.slice(-1);
+  const digit = parseInt(lastChar);
+  return !isNaN(digit) && digit % 2 === 1;
+}
+
+export function hasIndicator(bomb: BombState | null, indicator: Indicator): boolean {
+  if (!bomb) return false;
+  return bomb.indicators.includes(indicator);
+}
+
+export function hasPort(bomb: BombState | null, port: PortType): boolean {
+  if (!bomb) return false;
+  return bomb.ports.includes(port);
+}
+
+export function hasMoreBatteriesThan(bomb: BombState | null, count: number): boolean {
+  if (!bomb) return false;
+  return bomb.batteries > count;
 }

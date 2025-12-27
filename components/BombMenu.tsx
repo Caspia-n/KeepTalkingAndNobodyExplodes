@@ -7,7 +7,13 @@ import { SavedBomb } from '@/types/bomb';
 
 type MenuView = 'main' | 'load';
 
-export default function BombMenu({ onStartNew, onContinue, onEdit }: { onStartNew: () => void; onContinue: () => void; onEdit: () => void }) {
+interface BombMenuProps {
+  onStartNew: () => void;
+  onContinue: () => void;
+  onEdit: () => void;
+}
+
+export default function BombMenu({ onStartNew, onContinue, onEdit }: BombMenuProps) {
   const { bomb, hasActiveBomb, clearBomb, loadBomb } = useBomb();
   const [view, setView] = useState<MenuView>('main');
   const [savedBombs, setSavedBombs] = useState<SavedBomb[]>([]);
@@ -143,19 +149,19 @@ export default function BombMenu({ onStartNew, onContinue, onEdit }: { onStartNe
                 onClick={onContinue}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
               >
-                Continue Defusal
+                🎯 Start Defusal
               </button>
               <button
                 onClick={onEdit}
                 className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
               >
-                Edit Bomb
+                ✏️ Edit Bomb
               </button>
               <button
                 onClick={() => setShowResetConfirm(true)}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
               >
-                Reset Bomb
+                🔄 Reset Bomb
               </button>
             </div>
           </div>
@@ -181,7 +187,7 @@ export default function BombMenu({ onStartNew, onContinue, onEdit }: { onStartNe
             <div className="mt-8 bg-slate-700/50 rounded-lg p-6 border border-slate-600">
               <h3 className="text-lg font-bold text-white mb-3">How to Play</h3>
               <ul className="text-slate-300 space-y-2 text-sm">
-                <li>• Start by entering your bomb&apos;s characteristics</li>
+                <li>• Start by entering your bomb's characteristics</li>
                 <li>• Work with your team to defuse modules</li>
                 <li>• One person sees the bomb, the other has the manual</li>
                 <li>• Avoid strikes - 3 strikes and the bomb explodes!</li>
