@@ -187,7 +187,7 @@ export default function BombMenu({ onStartNew, onContinue, onEdit }: BombMenuPro
             <div className="mt-8 bg-slate-700/50 rounded-lg p-6 border border-slate-600">
               <h3 className="text-lg font-bold text-white mb-3">How to Play</h3>
               <ul className="text-slate-300 space-y-2 text-sm">
-                <li>• Start by entering your bomb's characteristics</li>
+                <li>• Start by entering your bomb&apos;s characteristics</li>
                 <li>• Work with your team to defuse modules</li>
                 <li>• One person sees the bomb, the other has the manual</li>
                 <li>• Avoid strikes - 3 strikes and the bomb explodes!</li>

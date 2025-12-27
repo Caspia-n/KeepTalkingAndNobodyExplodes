@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useBomb } from '@/lib/bomb-context';
-import { getModule, MODULE_NAMES } from '@/lib/modules';
+import { getModule } from '@/lib/modules';
 import ModuleSelector from './ModuleSelector';
 import ModuleInstructions from './ModuleInstructions';
 import ModuleSolver from './ModuleSolver';
@@ -13,22 +13,10 @@ import { ModuleId } from '@/types/bomb';
 type DefusalView = 'modules' | 'bomb';
 
 export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => void; onReset: () => void }) {
-  const { bomb, hasActiveBomb, isModuleSolved, getSolvedModules, getUnsolvedModules, resetModules } = useBomb();
+  const { bomb, resetModules, getSolvedModules } = useBomb();
   const [selectedModule, setSelectedModule] = useState<ModuleId | null>('wires');
   const [view, setView] = useState<DefusalView>('modules');
-  const [showVictory, setShowVictory] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-
-  useEffect(() => {
-    if (!bomb) return;
-
-    const solvedCount = getSolvedModules().length;
-    const totalCount = bomb.modules.length;
-
-    if (solvedCount === totalCount && totalCount > 0) {
-      setShowVictory(true);
-    }
-  }, [bomb, getSolvedModules]);
 
   useEffect(() => {
     // Check for game over when timer reaches 0
@@ -45,6 +33,7 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
 
   const solvedCount = getSolvedModules().length;
   const totalCount = bomb.modules.length;
+  const isVictory = solvedCount === totalCount && totalCount > 0;
 
   const handleModuleSelect = (moduleId: ModuleId) => {
     setSelectedModule(moduleId);
@@ -60,7 +49,6 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
 
   const handleResetModules = () => {
     resetModules();
-    setShowVictory(false);
     setSelectedModule('wires');
   };
 
@@ -96,7 +84,7 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
     );
   }
 
-  if (showVictory) {
+  if (isVictory) {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-slate-800 rounded-lg p-8 shadow-xl border border-green-500/50">
@@ -215,12 +203,14 @@ export default function DefusalInterface({ onEdit, onReset }: { onEdit: () => vo
               <>
                 {getModule(selectedModule)?.validate ? (
                   <ModuleSolver
+                    key={selectedModule}
                     moduleId={selectedModule}
                     onComplete={handleModuleSolved}
                     onError={handleAddStrike}
                   />
                 ) : (
                   <ModuleInstructions
+                    key={selectedModule}
                     moduleId={selectedModule}
                     onModuleSolved={handleModuleSolved}
                     onAddStrike={handleAddStrike}

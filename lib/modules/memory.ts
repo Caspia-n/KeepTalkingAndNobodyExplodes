@@ -1,4 +1,3 @@
-import { BombState } from '@/types/bomb';
 import { ModuleLogic, InstructionStep } from '@/types/module';
 
 // Memory module logic based on KTANE manual
@@ -11,7 +10,7 @@ export const memory: ModuleLogic = {
     difficulty: 'hard',
   },
 
-  getSteps: (_bomb: BombState): InstructionStep[] => {
+  getSteps: (): InstructionStep[] => {
     const steps: InstructionStep[] = [
       {
         step: 1,
@@ -165,7 +164,7 @@ STAGE 3 WAS 6:
     return steps;
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Memory module requires visual input' };
   },
 

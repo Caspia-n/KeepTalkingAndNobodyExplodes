@@ -49,7 +49,7 @@ export const keypads: ModuleLogic = {
     difficulty: 'medium',
   },
 
-  getSteps: (_bomb: BombState): InstructionStep[] => {
+  getSteps: (): InstructionStep[] => {
     const steps: InstructionStep[] = [
       {
         step: 1,
@@ -121,7 +121,7 @@ Find which column contains ALL FOUR symbols (only one column will). Then press t
     ];
   },
 
-  solve: (_bomb: BombState, answers: Record<string, any>) => {
+  solve: (_bomb: BombState, answers: Record<string, unknown>) => {
     const symbols = [
       answers['symbol-1'] as string,
       answers['symbol-2'] as string,
@@ -159,7 +159,7 @@ Find which column contains ALL FOUR symbols (only one column will). Then press t
     };
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Keypads module validated' };
   },
 

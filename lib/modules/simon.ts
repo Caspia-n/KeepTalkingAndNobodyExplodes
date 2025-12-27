@@ -68,7 +68,7 @@ For example, if the sequence starts flashing and you need to press BLUE, then th
     return steps;
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Simon Says module requires visual input' };
   },
 

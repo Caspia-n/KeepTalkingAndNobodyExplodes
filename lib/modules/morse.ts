@@ -97,7 +97,7 @@ If the frequency is incorrect, a strike will be given.`,
     return steps;
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Morse Code module requires audio input' };
   },
 

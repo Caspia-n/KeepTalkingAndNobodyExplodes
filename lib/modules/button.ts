@@ -119,7 +119,7 @@ Wait for the countdown timer to reach the correct number, then release the butto
     ];
   },
 
-  solve: (bomb: BombState, answers: Record<string, any>) => {
+  solve: (bomb: BombState, answers: Record<string, unknown>) => {
     const color = answers['button-color'] as string;
     const label = answers['button-label'] as string;
     const stripColor = answers['strip-color'] as string;
@@ -137,7 +137,7 @@ Wait for the countdown timer to reach the correct number, then release the butto
       'Pink': 9,
       'Brown': 0,
     };
-
+    
     // Apply rules in order
     // Rule 1: ABORT button with lit BOB indicator
     if (label === 'Abort' && bomb.indicators.includes('BOB')) {
@@ -216,7 +216,7 @@ Wait for the countdown timer to reach the correct number, then release the butto
     };
   },
 
-  validate: (_bomb: BombState, _answers: Record<string, unknown>): { correct: boolean; message?: string } => {
+  validate: (): { correct: boolean; message?: string } => {
     return { correct: true, message: 'Button module validated' };
   },
 

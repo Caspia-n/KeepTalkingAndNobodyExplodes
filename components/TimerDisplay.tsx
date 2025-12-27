@@ -9,27 +9,28 @@ interface TimerDisplayProps {
 }
 
 export default function TimerDisplay({ showControls = false, className = '' }: TimerDisplayProps) {
-  const { bomb, startTimer, stopTimer, isTimerRunning, getTimeRemaining } = useBomb();
+  const { bomb, startTimer, stopTimer, updateTimer, isTimerRunning, getTimeRemaining } = useBomb();
   const [currentTime, setCurrentTime] = useState<number>(getTimeRemaining());
+  const [lastTimer, setLastTimer] = useState(bomb?.timer);
 
-  useEffect(() => {
-    if (bomb?.timer) {
-      const [minutes, seconds] = bomb.timer.split(':').map(Number);
-      setCurrentTime(minutes * 60 + seconds);
-    }
-  }, [bomb?.timer]);
+  if (bomb?.timer !== lastTimer) {
+    const [minutes, seconds] = (bomb?.timer || '0:00').split(':').map(Number);
+    setCurrentTime(minutes * 60 + seconds);
+    setLastTimer(bomb?.timer);
+  }
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
-    if (isTimerRunning() && currentTime > 0) {
+    if (bomb && isTimerRunning() && currentTime > 0) {
       interval = setInterval(() => {
         setCurrentTime((prev) => {
           const newTime = prev - 1;
           // Update bomb timer string every second
           const minutes = Math.floor(newTime / 60);
           const seconds = newTime % 60;
-          bomb.timer = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          updateTimer(timeString);
           return newTime;
         });
       }, 1000);
@@ -40,7 +41,7 @@ export default function TimerDisplay({ showControls = false, className = '' }: T
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, currentTime, stopTimer, bomb]);
+  }, [isTimerRunning, currentTime, stopTimer, updateTimer, bomb]);
 
   const formatTime = (totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
