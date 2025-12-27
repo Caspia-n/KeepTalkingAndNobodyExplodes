@@ -16,6 +16,16 @@ export interface InstructionStep {
   };
 }
 
+export interface Question {
+  id: string;
+  type: 'text' | 'select' | 'multi-select' | 'boolean';
+  label: string;
+  description?: string;
+  options?: string[];
+  dependsOn?: string;
+  condition?: (answers: Record<string, unknown>) => boolean;
+}
+
 export interface ModuleInfo {
   id: string;
   name: string;
@@ -26,7 +36,9 @@ export interface ModuleInfo {
 
 export interface ModuleLogic {
   info: ModuleInfo;
-  getSteps: (bomb: BombState) => InstructionStep[];
-  validate: (bomb: BombState, answers: Record<string, unknown>) => { correct: boolean; message?: string };
-  defaultAnswers: () => Record<string, unknown>;
+  getSteps?: (bomb: BombState) => InstructionStep[];
+  getQuestions?: (bomb: BombState) => Question[];
+  solve?: (bomb: BombState, answers: Record<string, unknown>) => { solution: string; explanation?: string };
+  validate?: (bomb: BombState, answers: Record<string, unknown>) => { correct: boolean; message?: string };
+  defaultAnswers?: () => Record<string, unknown>;
 }

@@ -15,6 +15,14 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
   const [indicators, setIndicators] = useState<Indicator[]>(bomb?.indicators || []);
   const [ports, setPorts] = useState<PortType[]>(bomb?.ports || []);
   const [strikes, setStrikes] = useState(bomb?.strikes || 0);
+  const [timerMinutes, setTimerMinutes] = useState<number>(() => {
+    const timer = bomb?.timer || '5:00';
+    return parseInt(timer.split(':')[0]);
+  });
+  const [timerSeconds, setTimerSeconds] = useState<number>(() => {
+    const timer = bomb?.timer || '5:00';
+    return parseInt(timer.split(':')[1]);
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -34,6 +42,14 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
       newErrors.strikes = 'Number of strikes must be between 0 and 3';
     }
 
+    if (timerMinutes < 0 || timerMinutes > 59) {
+      newErrors.timer = 'Minutes must be between 0 and 59';
+    }
+
+    if (timerSeconds < 0 || timerSeconds > 59) {
+      newErrors.timer = 'Seconds must be between 0 and 59';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -42,6 +58,8 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
     e.preventDefault();
     if (!validate()) return;
 
+    const timer = `${timerMinutes.toString().padStart(1, '0')}:${timerSeconds.toString().padStart(2, '0')}`;
+
     if (bomb) {
       updateBomb({
         serialNumber,
@@ -49,6 +67,7 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
         indicators,
         ports,
         strikes,
+        timer,
       });
     } else {
       createBomb({
@@ -57,6 +76,7 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
         indicators,
         ports,
         strikes,
+        timer,
       });
     }
   };
@@ -200,6 +220,52 @@ export default function BombForm({ onCancel }: { onCancel: () => void }) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Timer */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Bomb Timer
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400">Minutes:</span>
+                <input
+                  id="timerMinutes"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={timerMinutes}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setTimerMinutes(value);
+                    if (errors.timer) setErrors({ ...errors, timer: '' });
+                  }}
+                  className="w-20 px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <span className="text-white font-bold text-xl">:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400">Seconds:</span>
+                <input
+                  id="timerSeconds"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={timerSeconds}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setTimerSeconds(value);
+                    if (errors.timer) setErrors({ ...errors, timer: '' });
+                  }}
+                  className="w-20 px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <span className="font-mono text-blue-400 font-bold">
+                {`${timerMinutes.toString().padStart(1, '0')}:${timerSeconds.toString().padStart(2, '0')}`}
+              </span>
+            </div>
+            {errors.timer && <p className="mt-2 text-sm text-red-400">{errors.timer}</p>}
           </div>
         </div>
 
